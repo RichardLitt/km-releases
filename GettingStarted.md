@@ -134,25 +134,54 @@ You can run Kontain payload wrapped in a native Docker container.... in this cas
 **** KRUN is not in the bundle yet, skip this section ****
 
 Or you can use Kontain `krun` runtime from docker/podman or directly. `krun` is installed together with KM and other components.
-`krun` is forked from Redhat's `crun` runtime, and can be invoked as `krun` or as `crun --kontain`
+`krun` is forked from Redhat's `crun` runtime github project, and can be invoked as `krun`
 
-Configuring `krun`: Documentation here is TBD
+Configuring `krun`:
 
-* Runtimes config
-*  OCI spec and use runtimes for bringing in existing kms. Update doc on how to use then and what needs to be in. Add an example
+* Runtimes config for docker
 
-```
+Edit /etc/docker/daemon.json using sudo to run your editor and add the following:
+
+```txt
   {
-  "default-runtime": "runc",
-  "runtimes": {
-    "crun": {
-      "path": "/opt/kontain/bin/crun",
-      "runtimeArgs": [
-              "--kontain"
-      ]
+    "default-runtime": "runc",
+    "runtimes": {
+      "krun": {
+        "path": "/opt/kontain/bin/krun",
+      }
     }
   }
-  ```
+```
+
+Then restart docker for the change to take effect:
+```bash
+sudo pkill -SIGHUP dockerd
+```
+
+Then you run a container using krun as follows:
+
+```bash
+docker run --runtime krun yourimage
+```
+
+* Runtimes config for podman
+
+Edit /usr/share/containers/containers.conf using sudo to run your editor and add the following in the [engine.runtimes] section of the file:
+
+```txt
+krun = [
+             "/opt/kontain/bin/krun",
+]
+```
+
+There is no need to restart podman.
+
+To run a container with krun in podman:
+
+```bash
+podman run --runtime krun yourimage
+```
+
 
 #### Validate
 
@@ -170,7 +199,7 @@ EOF
 docker run --rm -v /opt/kontain/bin/km:/opt/kontain/bin/km:z --device /dev/kvm kontain-hello
 ```
 
-To validate with `krun` (when we add `krun` to the bundle) `docker run --rm --runtime=kontain kontain-hello`
+To validate with `krun` (when we add `krun` to the bundle) `docker run --rm --runtime krun kontain-hello`
 
 ### Kubernetes
 
