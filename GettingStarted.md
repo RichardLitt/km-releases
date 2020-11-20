@@ -134,6 +134,10 @@ You can run Kontain payload wrapped in a native Docker container.... in this cas
 You can use Kontain `krun` runtime from docker or podman directly. `krun` is installed together with KM and other components.
 `krun` is forked from Redhat's `crun` runtime github progrct, and can be invoked as `krun`.
 
+An overview of container runtimes can be found here:
+
+https://medium.com/@avijitsarkar123/docker-and-oci-runtimes-a9c23a5646d6
+
 Configuring `krun`:
 
 * Runtimes config for docker
