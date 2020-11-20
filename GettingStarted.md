@@ -47,7 +47,7 @@ The `KVM` module is available on most Linux kernels. Kontain requies Linux Kerne
 
 Some cloud service providers, AWS in particular, do not supported nested virtualization with `KVM`. For these cases, the Kontain proprietary `KKM` module is used.
 
-To make it easie to try Kontain on AWS, Kontain provides a pre-built AMI to experiment with KKM (Ubuntu 20 with KKM preinstalled). See below in `Amazon - pre-built AMI` section
+To make it easier to try Kontain on AWS, Kontain provides a pre-built AMI to experiment with KKM (Ubuntu 20 with KKM preinstalled). See below in `Amazon - pre-built AMI` section
 
 Kontain manipulates VMs and needs acess to either `/dev/kvm` device, or `/dev/kkm` device , depending on the kernel module used.
 
@@ -131,28 +131,55 @@ You can run Kontain payload wrapped in a native Docker container.... in this cas
 
 #### Kontain OCI runtime (krun)
 
-**** KRUN is not in the bundle yet, skip this section ****
+You can use Kontain `krun` runtime from docker or podman directly. `krun` is installed together with KM and other components.
+`krun` is forked from Redhat's `crun` runtime github progrct, and can be invoked as `krun`.
 
-Or you can use Kontain `krun` runtime from docker/podman or directly. `krun` is installed together with KM and other components.
-`krun` is forked from Redhat's `crun` runtime, and can be invoked as `krun` or as `crun --kontain`
+Configuring `krun`:
 
-Configuring `krun`: Documentation here is TBD
+* Runtimes config for docker
 
-* Runtimes config
-*  OCI spec and use runtimes for bringing in existing kms. Update doc on how to use then and what needs to be in. Add an example
+Edit /etc/docker/daemon.json using sudo to run your editor and add the following:
 
-```
+```txt
   {
-  "default-runtime": "runc",
-  "runtimes": {
-    "crun": {
-      "path": "/opt/kontain/bin/crun",
-      "runtimeArgs": [
-              "--kontain"
-      ]
+    "default-runtime": "runc",
+    "runtimes": {
+      "krun": {
+        "path": "/opt/kontain/bin/krun"
+      }
     }
   }
-  ```
+```
+
+Then restart docker for the change to take effect:
+
+```bash
+systemctl reload-or-restart docker.service
+```
+
+* Runtimes config for podman
+
+Edit /usr/share/containers/containers.conf using sudo to run your editor and add the following in the [engine.runtimes] section of the file:
+
+```txt
+  krun = [
+    "/opt/kontain/bin/krun",
+  ]
+```
+
+There is no need to restart podman.
+
+* krun package requirements
+
+krun needs the following packages to run:
+
+glibc
+yajl
+libseccomp
+libcap
+
+Install them with the appropriate package manager for your linux distribution.  Probably dnf or apt-get.
+
 
 #### Validate
 
@@ -170,7 +197,17 @@ EOF
 docker run --rm -v /opt/kontain/bin/km:/opt/kontain/bin/km:z --device /dev/kvm kontain-hello
 ```
 
-To validate with `krun` (when we add `krun` to the bundle) `docker run --rm --runtime=kontain kontain-hello`
+* To validate with `krun` using docker:
+
+```bash
+docker run --rm --runtime krun kontain-hello
+```
+
+* To validate with krun using podman:
+
+```bash
+podman run --runtime krun kontain-hello
+```
 
 ### Kubernetes
 
